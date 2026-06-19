@@ -1,16 +1,24 @@
 const express = require("express");
+const authenticate = require("../middlewares/auth_middleware");
 const {
   getAllUsers,
   getUserDetails,
   updateUser,
   deleteUser,
   createUser,
+  signIn,
 } = require("../controllers/user_controller");
 
 const router = express.Router();
 
-router.route("/").get(getAllUsers).post(createUser);
+router.route("/").get(authenticate, getAllUsers).post(createUser);
 
-router.route("/:id").get(getUserDetails).patch(updateUser).delete(deleteUser);
+router.post("/auth", signIn);
+
+router
+  .route("/:id")
+  .get(authenticate, getUserDetails)
+  .patch(authenticate, updateUser)
+  .delete(authenticate, deleteUser);
 
 module.exports = router;

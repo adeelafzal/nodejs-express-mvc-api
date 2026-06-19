@@ -1,4 +1,5 @@
 const User = require("../models/user_model");
+const {getJWT} = require("../services/auth_service")
 
 async function getAllUsers(req, res) {
   const users = await User.find();
@@ -26,7 +27,7 @@ async function deleteUser(req, res) {
 
 async function createUser(req, res) {
   const body = req.body;
-  if (!body || !body.firstName || !body.email) {
+  if (!body || !body.firstName || !body.email || !body.password) {
     return res.status(400).json({ message: "All fields are required." });
   }
   const user = await User.create({
@@ -35,8 +36,21 @@ async function createUser(req, res) {
     email: body.email,
     gender: body.gender,
     jobTitle: body.jobTitle,
+    password: body.password
   });
   return res.status(201).json({ message: "User created successfully" });
+}
+
+async function signIn(req, res) {
+  const body = req.body;
+  if(!body || !body.email || !body.password){
+    return res.json({message: "All fields are required"});
+  }
+  const {email, password} = req.body;
+  const user = await User.findOne({email, password});
+  if(!user) return res.json({message: "Invalid email or passowrd"});
+  const jwtToken = getJWT(user);
+  return res.json({jwt:jwtToken,data:user});
 }
 
 module.exports = {
@@ -45,4 +59,5 @@ module.exports = {
   updateUser,
   deleteUser,
   createUser,
+  signIn
 };
